@@ -5,10 +5,11 @@ using UnityEngine;
 public class CharacterMovement : MonoBehaviour
 {
     [SerializeField] float walkSpeed;
-
+    [SerializeField] float jumpHeight;
     Animator animator;
     Rigidbody2D rb;
     float horizontalMove = 0f;
+    bool isGrounded = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -20,8 +21,41 @@ public class CharacterMovement : MonoBehaviour
     void Update()
     {
         horizontalMove = Input.GetAxisRaw("Horizontal") * walkSpeed;
-        Debug.Log($"move: {horizontalMove}");
+        
+        MoveHorizontally(horizontalMove);
+        if (Input.GetKeyDown(KeyCode.W) && isGrounded)
+        {
+            Jump();
+        }
+    }
+
+    void MoveHorizontally(float horizontalMove)
+    {
         animator.SetFloat("speed", horizontalMove);
         rb.velocity = new Vector2(horizontalMove, rb.velocity.y);
     }
+
+    void Jump()
+    {
+        animator.SetBool("isJump", true);
+        rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.collider.name == "Floor")
+        {
+            isGrounded = true;
+            animator.SetBool("isJump", false);
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.collider.name == "Floor")
+        {
+            isGrounded = false;
+        }
+    }
+
 }
